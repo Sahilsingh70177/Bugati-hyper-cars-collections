@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUGATTI - The Complete Hypercar Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background: #0a0a0a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+
+        canvas.bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(ellipse at center, rgba(0,212,255,0.03) 0%, transparent 70%);
+            padding: 3rem 2rem;
+        }
+
+        .hero {
+            min-height: 120vh;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 5rem;
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 1rem;
+            animation: fadeInDown 1.2s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #00d4ff;
+            letter-spacing: 3px;
+            animation: fadeInUp 1.2s ease-out 0.2s backwards;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: #00d4ff;
+            font-size: 1.5rem;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .car-section {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            padding: 6rem 4rem;
+        }
+
+        .car-image-viewer {
+            position: relative;
+            height: 550px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 60px rgba(0, 212, 255, 0.15);
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.3s forwards;
+        }
+
+        .car-image {
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: all 0.3s ease;
+            cursor: grab;
+        }
+
+        .car-image-viewer:hover .car-image {
+            transform: scale(1.05);
+        }
+
+        .image-controls {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .ctrl-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #00d4ff;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .view-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            font-size: 0.75rem;
+            color: #00d4ff;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        .car-details {
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.5s forwards;
+        }
+
+        .car-details h2 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .car-model {
+            font-size: 1rem;
+            color: #00d4ff;
+            letter-spacing: 4px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00d4ff;
+            margin: 1.5rem 0;
+        }
+
+        .year {
+            font-size: 0.85rem;
+            color: #666;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .spec-item {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            padding: 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .spec-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .spec-label {
+            font-size: 0.85rem;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .spec-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .description {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #aaa;
+            margin: 2rem 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+            color: #000;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+            text-transform: uppercase;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+            margin: 4rem 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #666;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 2rem 4rem;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(10,10,10,0.9) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #fff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: #aaa;
+            flex-wrap: wrap;
+            max-width: 65%;
+            justify-content: flex-end;
+        }
+
+        .nav-links a {
+            color: #aaa;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover {
+            color: #00d4ff;
+        }
+
+        .car-section:nth-child(even) {
+            direction: rtl;
+        }
+
+        .car-section:nth-child(even) > * {
+            direction: ltr;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .car-section {
+                grid-template-columns: 1fr;
+                padding: 4rem 2rem;
+                gap: 2rem;
+            }
+
+            .car-section:nth-child(even) {
+                direction: ltr;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .car-details h2 {
+                font-size: 2rem;
+            }
+
+            .specs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                padding: 1.5rem 2rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas class="bg"></canvas>
+
+    <div class="header">
+        <div class="logo">BUGATTI</div>
+        <div class="nav-links">
+            <a href="#type35">Type 35</a>
+            <a href="#eb110">EB110</a>
+            <a href="#veyron">Veyron</a>
+            <a href="#veyron-ss">Veyron SS</a>
+            <a href="#veyron-vitesse">Vitesse</a>
+            <a href="#chiron">Chiron</a>
+            <a href="#chiron-sport">Sport</a>
+            <a href="#chiron-ss">Super Sport</a>
+            <a href="#bolide">Bolide</a>
+            <a href="#divo">Divo</a>
+            <a href="#la-voiture">La Voiture</a>
+            <a href="#centodieci">Centodieci</a>
+            <a href="#mistral">Mistral</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <section class="section hero">
+            <div>
+                <p style="font-size: 1.1rem;">ESTABLISHED 1909</p>
+                <h1>BUGATTI</h1>
+                <p style="font-size: 1.3rem; margin-top: 1.5rem;">115 Years of Hypercar Evolution</p>
+                <div class="scroll-hint">↓</div>
+            </div>
+        </section>
+
+        <!-- TYPE 35 -->
+        <section class="section car-section" id="type35">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">1924 - 1930</div>
+                <h2>TYPE 35</h2>
+                <div class="car-model">Racing Legend</div>
+                <p class="description">Won over 1,800 races. Defined an era of motorsport dominance. The car that made Bugatti legendary.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">2.3L I8</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">140</div></div>
+                    <div class="spec-item"><div class="spec-label">Top Speed</div><div class="spec-value">210 KM/H</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">500+</div></div>
+                </div>
+                <button class="cta-button">Museum Link</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- EB110 -->
+        <section class="section car-section" id="eb110">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">1991 - 1995</div>
+                <h2>EB110</h2>
+                <div class="car-model">Supercar Renaissance</div>
+                <div class="price">€ 400,000</div>
+                <p class="description">110th anniversary masterpiece. Quad-turbocharged V12 with cutting-edge 90s technology.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">3.5L V12 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">553</div></div>
+                    <div class="spec-item"><div class="spec-label">0-100</div><div class="spec-value">3.2s</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">139</div></div>
+                </div>
+                <button class="cta-button">Learn More</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- VEYRON -->
+        <section class="section car-section" id="veyron">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2005 - 2014</div>
+                <h2>VEYRON 16.4</h2>
+                <div class="car-model">1000 HP Revolution</div>
+                <div class="price">€ 1,500,000</div>
+                <p class="description">First production car to break 1,000 horsepower. Changed automotive history forever.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,001</div></div>
+                    <div class="spec-item"><div class="spec-label">Top Speed</div><div class="spec-value">431 KM/H</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">450</div></div>
+                </div>
+                <button class="cta-button">Reserve</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- VEYRON SUPER SPORT -->
+        <section class="section car-section" id="veyron-ss">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1617654112368-307921291f42?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2010 - 2014</div>
+                <h2>VEYRON SUPER SPORT</h2>
+                <div class="car-model">Speed Record King</div>
+                <div class="price">€ 2,400,000</div>
+                <p class="description">267.856 mph. Fastest production car ever. Only 30 units. Speed perfected.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,200</div></div>
+                    <div class="spec-item"><div class="spec-label">0-100</div><div class="spec-value">2.46s</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">30</div></div>
+                </div>
+                <button class="cta-button">Contact</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- VEYRON GRAND SPORT VITESSE -->
+        <section class="section car-section" id="veyron-vitesse">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2012 - 2014</div>
+                <h2>GRAND SPORT VITESSE</h2>
+                <div class="car-model">Open Air Legend</div>
+                <div class="price">€ 2,650,000</div>
+                <p class="description">Fastest roadster ever made. Drop-top performance. Only 10 built worldwide.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,200</div></div>
+                    <div class="spec-item"><div class="spec-label">Top Speed</div><div class="spec-value">430 KM/H</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">10</div></div>
+                </div>
+                <button class="cta-button">Inquire</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- CHIRON -->
+        <section class="section car-section" id="chiron">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1485095329183-d0797cdc5676?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2016 - 2021</div>
+                <h2>CHIRON</h2>
+                <div class="car-model">Modern Hypercar</div>
+                <div class="price">€ 2,650,000</div>
+                <p class="description">1,600 HP. The hypercar benchmark. 600 built. The new standard for performance.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,600</div></div>
+                    <div class="spec-item"><div class="spec-label">0-100</div><div class="spec-value">2.4s</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">500</div></div>
+                </div>
+                <button class="cta-button">Reserve</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- CHIRON SPORT -->
+        <section class="section car-section" id="chiron-sport">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1506157786151-b8491531f063?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2018 - 2021</div>
+                <h2>CHIRON SPORT</h2>
+                <div class="car-model">Handling Specialist</div>
+                <div class="price">€ 2,750,000</div>
+                <p class="description">Lighter & more agile. Enhanced cornering. 60 units. Precision engineering.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,600</div></div>
+                    <div class="spec-item"><div class="spec-label">Weight</div><div class="spec-value">1,900 KG</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">60</div></div>
+                </div>
+                <button class="cta-button">Inquire</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- CHIRON SUPER SPORT 300+ -->
+        <section class="section car-section" id="chiron-ss">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2019 - Present</div>
+                <h2>CHIRON SUPER SPORT 300+</h2>
+                <div class="car-model">Speed Icon</div>
+                <div class="price">€ 3,200,000</div>
+                <p class="description">490+ km/h. First to officially exceed 300 mph. Ultimate speed machine. 30 units only.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,600</div></div>
+                    <div class="spec-item"><div class="spec-label">Top Speed</div><div class="spec-value">490+ KM/H</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">30</div></div>
+                </div>
+                <button class="cta-button">Reserve</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- BOLIDE -->
+        <section class="section car-section" id="bolide">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1606611013016-969c19d4a42f?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2020 - Present</div>
+                <h2>BOLIDE</h2>
+                <div class="car-model">Track Weapon</div>
+                <div class="price">€ 5,000,000+</div>
+                <p class="description">Pure track machine. 1,850 HP. 2.17s 0-100. No road compromises. 40 units only.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,850</div></div>
+                    <div class="spec-item"><div class="spec-label">0-100</div><div class="spec-value">2.17s</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">40</div></div>
+                </div>
+                <button class="cta-button">Get List</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- DIVO -->
+        <section class="section car-section" id="divo">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2018 - Present</div>
+                <h2>DIVO</h2>
+                <div class="car-model">Cornering Master</div>
+                <div class="price">€ 5,800,000</div>
+                <p class="description">1.6G lateral. Extreme downforce. Extreme handling. 40 built. Perfected cornering.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,500</div></div>
+                    <div class="spec-item"><div class="spec-label">Lateral G</div><div class="spec-value">1.6 G</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">40</div></div>
+                </div>
+                <button class="cta-button">View</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- LA VOITURE NOIRE -->
+        <section class="section car-section" id="la-voiture">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1609708536965-59d76ae239c5?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div style="display: inline-block; background: rgba(255, 215, 0, 0.2); border: 1px solid rgba(255, 215, 0, 0.5); color: #ffd700; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;">ONE OF A KIND</div>
+                <div class="year">2019</div>
+                <h2>LA VOITURE NOIRE</h2>
+                <div class="car-model">Ultimate Masterpiece</div>
+                <div class="price">€ 16,000,000</div>
+                <p class="description">Only one ever made. €16 million. Highest price paid for a new car. Pure art.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,600</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">1</div></div>
+                    <div class="spec-item"><div class="spec-label">Status</div><div class="spec-value">SOLD</div></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- CENTODIECI -->
+        <section class="section car-section" id="centodieci">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1494976388531-d1058494cdd0?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div style="display: inline-block; background: rgba(255, 215, 0, 0.2); border: 1px solid rgba(255, 215, 0, 0.5); color: #ffd700; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem;">LIMITED 10 UNITS</div>
+                <div class="year">2020 - Present</div>
+                <h2>CENTODIECI</h2>
+                <div class="car-model">Heritage Reimagined</div>
+                <div class="price">€ 8,900,000</div>
+                <p class="description">110 years celebration. Honors EB110 legacy. 10 units. Past meets future.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,600</div></div>
+                    <div class="spec-item"><div class="spec-label">Top Speed</div><div class="spec-value">490 KM/H</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">10</div></div>
+                </div>
+                <button class="cta-button">Inquire</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- MISTRAL -->
+        <section class="section car-section" id="mistral">
+            <div class="car-image-viewer">
+                <div class="car-image" style="background-image: url('https://images.unsplash.com/photo-1618654136987-a11cd54f37cc?w=800&h=600&fit=crop');"></div>
+                <div class="view-hint">Drag to Pan • Scroll to Zoom</div>
+                <div class="image-controls">
+                    <button class="ctrl-btn">◀</button>
+                    <button class="ctrl-btn">▶</button>
+                    <button class="ctrl-btn">🔍</button>
+                </div>
+            </div>
+            <div class="car-details">
+                <div class="year">2023 - Present</div>
+                <h2>MISTRAL</h2>
+                <div class="car-model">Open Air Hypercar</div>
+                <div class="price">€ 5,000,000</div>
+                <p class="description">Drop-top freedom. 490 km/h roadster. 99 units. Modern interpretation of speed.</p>
+                <div class="specs-grid">
+                    <div class="spec-item"><div class="spec-label">Engine</div><div class="spec-value">8.0L W16 QT</div></div>
+                    <div class="spec-item"><div class="spec-label">HP</div><div class="spec-value">1,600</div></div>
+                    <div class="spec-item"><div class="spec-label">Top Speed</div><div class="spec-value">490 KM/H</div></div>
+                    <div class="spec-item"><div class="spec-label">Built</div><div class="spec-value">99</div></div>
+                </div>
+                <button class="cta-button">Reserve</button>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <footer class="footer">
+            <p>© 1909-2024 BUGATTI AUTOMOBILES. ALL RIGHTS RESERVED.</p>
+            <p style="margin-top: 2rem; color: #444;">13 LEGENDARY MODELS. 115 YEARS. PURE OBSESSION.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Particle background
+        const bgCanvas = document.querySelector('.bg');
+        const bgCtx = bgCanvas.getContext('2d');
+        bgCanvas.width = window.innerWidth;
+        bgCanvas.height = window.innerHeight;
+
+        const particles = [];
+        for (let i = 0; i < 300; i++) {
+            particles.push({
+                x: Math.random() * bgCanvas.width,
+                y: Math.random() * bgCanvas.height,
+                vx: (Math.random() - 0.5) * 1,
+                vy: (Math.random() - 0.5) * 1,
+                size: Math.random() * 2.5
+            });
+        }
+
+        function animateBg() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            bgCtx.fillStyle = 'rgba(0, 212, 255, 0.5)';
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0) p.x = bgCanvas.width;
+                if (p.x > bgCanvas.width) p.x = 0;
+                if (p.y < 0) p.y = bgCanvas.height;
+                if (p.y > bgCanvas.height) p.y = 0;
+                bgCtx.beginPath();
+                bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                bgCtx.fill();
+            });
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        window.addEventListener('resize', () => {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        });
+
+        // Navigation
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Image viewer interactivity
+        document.querySelectorAll('.car-image-viewer').forEach(viewer => {
+            const img = viewer.querySelector('.car-image');
+            let scale = 1;
+            let panX = 0, panY = 0;
+
+            viewer.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                scale += e.deltaY > 0 ? -0.1 : 0.1;
+                scale = Math.max(1, Math.min(scale, 3));
+                img.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
+            });
+
+            viewer.addEventListener('mousemove', (e) => {
+                if (e.buttons !== 1) return;
+                panX += e.movementX;
+                panY += e.movementY;
+                img.style.transform = `scale(${scale}) translate(${panX}px, ${panY}px)`;
+            });
+
+            viewer.addEventListener('dblclick', () => {
+                scale = 1;
+                panX = 0;
+                panY = 0;
+                img.style.transform = 'scale(1) translate(0, 0)';
+            });
+        });
+    </script>
+</body>
+</html>
